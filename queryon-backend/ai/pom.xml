@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.queryon</groupId>
+    <artifactId>queryon-backend</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>queryon-ai</artifactId>
+  <name>Queryon AI</name>
+  <description>ChatClient 编排、Schema Linking、结构化输出、澄清、模型端点适配</description>
+
+  <!-- 依赖方向约束：ai 只调用 semantic 与 query 的能力契约，不反向依赖，不直连物理表 -->
+  <dependencies>
+    <dependency>
+      <groupId>com.queryon</groupId>
+      <artifactId>queryon-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.queryon</groupId>
+      <artifactId>queryon-semantic</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.queryon</groupId>
+      <artifactId>queryon-query</artifactId>
+    </dependency>
+  </dependencies>
+</project>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.queryon</groupId>
+  <artifactId>queryon-backend</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Queryon Backend</name>
+
+  <modules>
+    <module>common</module>
+    <module>semantic</module>
+    <module>query</module>
+    <module>ai</module>
+    <module>web</module>
+    <module>evaluation</module>
+    <module>bootstrap</module>
+  </modules>
+
+  <properties>
+    <java.version>21</java.version>
+    <maven.compiler.release>${java.version}</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- 骨架占位版本（核查日快照）；依赖可行性验证时按官方最新补丁成对调整 -->
+    <spring-boot.version>3.5.6</spring-boot.version>
+    <spring-ai.version>1.1.0</spring-ai.version>
+    <spring-ai-alibaba.version>1.1.0.0</spring-ai-alibaba.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.queryon</groupId>
+        <artifactId>queryon-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.queryon</groupId>
+        <artifactId>queryon-semantic</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.queryon</groupId>
+        <artifactId>queryon-query</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.queryon</groupId>
+        <artifactId>queryon-ai</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.queryon</groupId>
+        <artifactId>queryon-web</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.queryon</groupId>
+        <artifactId>queryon-evaluation</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.queryon</groupId>
+        <artifactId>queryon-bootstrap</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <!--
+    M1a 待补坐标：Spring AI BOM、Spring AI Alibaba DashScope starter、JSqlParser、
+    PostgreSQL 驱动、Spring Security、Testcontainers、Micrometer/OpenTelemetry 等。
+    须在依赖可行性验证通过并按官方文档核实后引入；本次不预填未经核实的坐标。
+    硬约束：Boot 3.5.x <-> Spring AI 1.1.x <-> Alibaba starter 必须成对调整；
+    Spring AI 2.0 需 Boot 4.x，不属当前选型。
+  -->
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>

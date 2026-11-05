@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.queryon</groupId>
+    <artifactId>queryon-backend</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>queryon-web</artifactId>
+  <name>Queryon Web</name>
+  <description>REST API、鉴权入口、springdoc-openapi、评测运行器触发</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.queryon</groupId>
+      <artifactId>queryon-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.queryon</groupId>
+      <artifactId>queryon-ai</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.queryon</groupId>
+      <artifactId>queryon-query</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.queryon</groupId>
+      <artifactId>queryon-evaluation</artifactId>
+    </dependency>
+  </dependencies>
+</project>

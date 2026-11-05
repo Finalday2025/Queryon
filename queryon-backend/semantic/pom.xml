@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.queryon</groupId>
+    <artifactId>queryon-backend</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>queryon-semantic</artifactId>
+  <name>Queryon Semantic</name>
+  <description>语义模型、指标／术语／时间口径、黄金示例库、指标版本</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.queryon</groupId>
+      <artifactId>queryon-common</artifactId>
+    </dependency>
+  </dependencies>
+</project>
