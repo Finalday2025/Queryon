@@ -20,6 +20,7 @@ public record QueryRequest(List<String> metrics, List<String> dimensions, String
         Map<String, String> safeFilters = filters == null ? Map.of() : filters;
         TimeWindow window = switch (timeWindow == null ? "ALL" : timeWindow.toUpperCase()) {
             case "LAST_MONTH" -> TimeWindow.lastMonth(today);
+            case "MONTH_TO_DATE" -> TimeWindow.monthToDate(today);
             case "YEAR_TO_DATE" -> TimeWindow.yearToDate(today);
             default -> TimeWindow.all();
         };

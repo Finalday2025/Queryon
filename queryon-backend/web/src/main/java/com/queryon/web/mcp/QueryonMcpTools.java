@@ -76,7 +76,7 @@ public class QueryonMcpTools {
     public String query(
             @ToolParam(description = "指标编码列表，如 [\"net_revenue\"]", required = false) List<String> metrics,
             @ToolParam(description = "维度编码列表，如 [\"region\"]，可空", required = false) List<String> dimensions,
-            @ToolParam(description = "时间窗：ALL / LAST_MONTH / YEAR_TO_DATE，可空", required = false) String timeWindow,
+            @ToolParam(description = "时间窗：ALL / LAST_MONTH / MONTH_TO_DATE / YEAR_TO_DATE，可空", required = false) String timeWindow,
             @ToolParam(description = "维度过滤，如 {\"region\":\"华东\"}，可空", required = false) Map<String, String> filters,
             @ToolParam(description = "返回行数上限，可空", required = false) Integer limit,
             @ToolParam(description = "原始 SQL；若提供则优先按 SQL 路径执行，可空", required = false) String sql,

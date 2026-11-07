@@ -122,11 +122,18 @@ public final class SqlSemanticReader {
         if (range[0] == null || range[1] == null) {
             return TimeWindow.all();
         }
-        boolean lastMonth = range[0].getDayOfMonth() == 1
-                && range[1].equals(range[0].plusMonths(1));
-        TimeWindow.Type type = lastMonth ? TimeWindow.Type.LAST_MONTH : TimeWindow.Type.YEAR_TO_DATE;
-        return new TimeWindow(type, range[0], range[1], SemanticRegistry.COL_ORDER_DATE,
-                lastMonth ? "上一自然月，按 order_date 归属" : "本年至今，按 order_date 归属");
+        boolean firstOfMonth = range[0].getDayOfMonth() == 1;
+        boolean fullMonth = firstOfMonth && range[1].equals(range[0].plusMonths(1));
+        // 只覆盖当月一部分（如本月至今）时不再标成本年至今，避免把两种口径混为一谈。
+        boolean monthToDate = firstOfMonth && range[1].isBefore(range[0].plusMonths(1));
+        TimeWindow.Type type = fullMonth ? TimeWindow.Type.LAST_MONTH
+                : monthToDate ? TimeWindow.Type.MONTH_TO_DATE : TimeWindow.Type.YEAR_TO_DATE;
+        String label = switch (type) {
+            case LAST_MONTH -> "上一自然月，按 order_date 归属";
+            case MONTH_TO_DATE -> "本月至今，按 order_date 归属";
+            default -> "本年至今，按 order_date 归属";
+        };
+        return new TimeWindow(type, range[0], range[1], SemanticRegistry.COL_ORDER_DATE, label);
     }
 
 }

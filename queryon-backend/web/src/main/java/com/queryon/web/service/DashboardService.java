@@ -32,11 +32,13 @@ public final class DashboardService {
     public Dashboard build(String timeWindow, Actor actor) {
         String normalized = timeWindow == null ? "LAST_MONTH" : timeWindow.toUpperCase();
         TimeWindow window = switch (normalized) {
+            case "MONTH_TO_DATE" -> TimeWindow.monthToDate(LocalDate.now());
             case "YEAR_TO_DATE" -> TimeWindow.yearToDate(LocalDate.now());
             case "ALL" -> TimeWindow.all();
             default -> TimeWindow.lastMonth(LocalDate.now());
         };
         String label = switch (normalized) {
+            case "MONTH_TO_DATE" -> "MONTH_TO_DATE";
             case "YEAR_TO_DATE" -> "YEAR_TO_DATE";
             case "ALL" -> "ALL";
             default -> "LAST_MONTH";

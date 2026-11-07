@@ -15,7 +15,7 @@ public record TimeWindow(Type type, LocalDate start, LocalDate end,
                          String basisColumn, String label) {
 
     public enum Type {
-        LAST_MONTH, YEAR_TO_DATE, ALL
+        LAST_MONTH, MONTH_TO_DATE, YEAR_TO_DATE, ALL
     }
 
     public static TimeWindow lastMonth(LocalDate today) {
@@ -23,6 +23,12 @@ public record TimeWindow(Type type, LocalDate start, LocalDate end,
         LocalDate firstOfLastMonth = firstOfThisMonth.minusMonths(1);
         return new TimeWindow(Type.LAST_MONTH, firstOfLastMonth, firstOfThisMonth,
                 "order_date", "上一自然月，按 order_date 归属");
+    }
+
+    /** 本月至今：从当月 1 日到查询发起日（含当天），与「本月」这类问法对应，不等同于完整自然月。 */
+    public static TimeWindow monthToDate(LocalDate today) {
+        return new TimeWindow(Type.MONTH_TO_DATE, today.withDayOfMonth(1), today.plusDays(1),
+                "order_date", "本月至今，按 order_date 归属");
     }
 
     public static TimeWindow yearToDate(LocalDate today) {

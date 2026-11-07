@@ -211,6 +211,9 @@ public final class HybridQuestionParser {
         if (text.contains("上月") || text.contains("上个月") || text.contains("上一自然月")) {
             return Optional.of(TimeWindow.lastMonth(today));
         }
+        if (text.contains("本月") || text.contains("这个月") || text.contains("当月")) {
+            return Optional.of(TimeWindow.monthToDate(today));
+        }
         if (text.contains("今年累计") || text.contains("本年至今") || text.contains("今年") || text.contains("本年")) {
             return Optional.of(TimeWindow.yearToDate(today));
         }
