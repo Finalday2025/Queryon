@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -55,7 +56,10 @@ public class JdbcDataConfiguration {
                 Duration.ofSeconds(ttlSeconds));
     }
 
+    /** {@link CachingQueryExecutor} 同时是 QueryExecutor 与 CacheStats，容器里会出现两个类型匹配的
+     *  bean；这里显式标为 @Primary，保证可观测入口注入的是这份统计视图而不是执行器本身。 */
     @Bean
+    @Primary
     public CacheStats cacheStats(ObjectProvider<QueryExecutor> provider) {
         QueryExecutor executor = provider.getIfAvailable();
         return executor instanceof CachingQueryExecutor cached ? cached : CacheStats.disabled();

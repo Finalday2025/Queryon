@@ -41,6 +41,18 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-redis</artifactId>
     </dependency>
+    <!-- PostgreSQL 持久化回归：真实数据库由 Testcontainers 拉起，版本同样由 Boot BOM 锁定。
+         无容器运行时（无 Docker）时该测试整类跳过，离线构建与发布门禁不受影响。 -->
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

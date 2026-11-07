@@ -27,8 +27,9 @@
 - **异步、分享与可观测**：异步长查询可提交／轮询／取消并按身份隔离；分享链接按创建者身份复用、不扩大权限；订阅支持进程内周期调度；`/api/observability/cache` 提供 Redis 命中率与降级计数，仪表板可视化；问数页提供语义层术语联想补全。
 - **MCP 适配层**（`M2` 已决）：Spring AI MCP Server 以 SSE 传输（`/sse`）暴露受管指标目录与问数工具，与 REST 共用同一语义层、同一查询接口与同一套治理横切，不另开口径。
 - **开放数据服务**（`D8-09`）：`/api/data-service/*` 以服务密钥（`X-Queryon-Service-Key`）鉴权并接收显式 `subject` 身份，按该身份注入行列级过滤，调用可计量、响应不回传密钥；未配置 `QUERYON_SERVICE_API_KEY` 时整组接口关闭。
+- **PostgreSQL 持久化回归**：`PostgresPersistenceIntegrationTest` 用 Testcontainers 拉起真实 PostgreSQL，执行 `init/` 下的建表与示例数据脚本后跑受治理问数全链路（SQL 渲染、维表 JOIN、明细分摊、权限注入、写操作拒绝）；宿主机没有容器运行时则整类跳过并在测试报告中标记为 skipped，不阻断离线构建。
 
-当前未启用：真实模型端点（具体模型名、额度与限流策略属未决项，触发前不拍板）、DashScope starter、Spring Security／OIDC、PostgreSQL 持久化与 Testcontainers、Micrometer／OpenTelemetry 导出器、**订阅的定时投递通道**（进程内周期调度已可用，外部推送与调度归属待 `05` 第 4 节再确认）、异步长查询任务化。模型路径默认走离线确定性实现，**不需要任何密钥即可跑通**。
+当前未启用：真实模型端点（具体模型名、额度与限流策略属未决项，触发前不拍板）、DashScope starter、Spring Security／OIDC、Micrometer／OpenTelemetry 导出器、**订阅的定时投递通道**（进程内周期调度已可用，外部推送与调度归属待 `05` 第 4 节再确认）、异步长查询任务化。模型路径默认走离线确定性实现，**不需要任何密钥即可跑通**。
 
 默认 profile 为 `offline`：只使用内置内存示例数据集，**不连接任何外部服务，新克隆即可启动**，`mvn test` 与发布门禁同样离线可重复。需要接本地 PostgreSQL／Redis 时用 `SPRING_PROFILES_ACTIVE=dev` 激活，连接参数放在本地 `application-dev.yml`（已 gitignore，不入库、不进镜像，见 `.dockerignore`）。企业版能力（多租户、AI 访问控制与用量配额、对象级权限、Calcite 翻译引擎、Redis／Quartz 调度等）按版本规划留在 `M3`／`M4`，社区版 `M2` 不引入。
 
