@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-`P0` 可信问数闭环已实现并通过评测：`M1a` 的后端部分（语义层、四道护栏、权限随人、混合解析、REST API、24 条 golden set、纠正样本回流）与 `M1b` 的完整前端界面。
+社区版能力已实现并通过评测：`M1a` 的后端闭环（语义层、四道护栏、权限随人、混合解析、REST API、24 条 golden set、纠正样本回流）、`M1b` 的完整前端界面，以及 `M2` 的残余项（方言翻译与回归、数据预览与值画像、MCP 适配层、订阅／分享／异步查询、可观测与缓存统计）。
 
 已落地：
 
@@ -25,10 +25,14 @@
 - **订阅、导出与数据解读**：报表支持 CSV／Excel／PDF／图表 PNG 导出与打印；订阅台账按身份隔离、可立即执行并留痕；问数结果附确定性数据解读与可一键追问的推荐问题。
 - **数据源与容器化**：`/api/datasources` 提供数据源与元数据同步；根 `Dockerfile` 多阶段构建后端镜像，`docker-compose.yml` 编排 PostgreSQL、Redis 与应用，凭据只由环境变量注入。
 - **异步、分享与可观测**：异步长查询可提交／轮询／取消并按身份隔离；分享链接按创建者身份复用、不扩大权限；订阅支持进程内周期调度；`/api/observability/cache` 提供 Redis 命中率与降级计数，仪表板可视化；问数页提供语义层术语联想补全。
+- **MCP 适配层**（`M2` 已决）：Spring AI MCP Server 以 SSE 传输（`/sse`）暴露受管指标目录与问数工具，与 REST 共用同一语义层、同一查询接口与同一套治理横切，不另开口径。
+- **开放数据服务**（`D8-09`）：`/api/data-service/*` 以服务密钥（`X-Queryon-Service-Key`）鉴权并接收显式 `subject` 身份，按该身份注入行列级过滤，调用可计量、响应不回传密钥；未配置 `QUERYON_SERVICE_API_KEY` 时整组接口关闭。
 
-当前未启用：真实模型端点（具体模型名、额度与限流策略属未决项，触发前不拍板）、DashScope starter、Spring Security／OIDC、PostgreSQL 持久化与 Testcontainers、Micrometer／OpenTelemetry 导出器、**定时订阅推送**（调度归属待 `05` 第 4 节再确认）、异步长查询任务化。模型路径默认走离线确定性实现，**不需要任何密钥即可跑通**。`QUERYON_PROFILE=dev` 时按 `application-dev.yml`（已 gitignore）连接 PostgreSQL 取数并用 Redis 缓存查询结果；默认 profile 与全部测试仍走内存示例数据集，保证 `mvn test` 离线可重复。企业版能力（多租户、AI 访问控制与用量配额、对象级权限、Calcite 翻译引擎、Redis／Quartz 调度等）按版本规划留在 `M3`／`M4`，社区版 `M2` 不引入。
+当前未启用：真实模型端点（具体模型名、额度与限流策略属未决项，触发前不拍板）、DashScope starter、Spring Security／OIDC、PostgreSQL 持久化与 Testcontainers、Micrometer／OpenTelemetry 导出器、**订阅的定时投递通道**（进程内周期调度已可用，外部推送与调度归属待 `05` 第 4 节再确认）、异步长查询任务化。模型路径默认走离线确定性实现，**不需要任何密钥即可跑通**。
 
-根 `LICENSE` 按 Apache-2.0 在首次发布前添加。
+默认 profile 为 `offline`：只使用内置内存示例数据集，**不连接任何外部服务，新克隆即可启动**，`mvn test` 与发布门禁同样离线可重复。需要接本地 PostgreSQL／Redis 时用 `SPRING_PROFILES_ACTIVE=dev` 激活，连接参数放在本地 `application-dev.yml`（已 gitignore，不入库、不进镜像，见 `.dockerignore`）。企业版能力（多租户、AI 访问控制与用量配额、对象级权限、Calcite 翻译引擎、Redis／Quartz 调度等）按版本规划留在 `M3`／`M4`，社区版 `M2` 不引入。
+
+根 `LICENSE` 为 Apache-2.0。
 
 ## 技术栈
 
@@ -40,16 +44,16 @@ Java 21 LTS、Spring Boot 3.5.x、Spring AI 1.1.x + Spring AI Alibaba DashScope 
 
 1. 安装 JDK 21 与 Maven（前端另需 Node.js）。
 2. 后端：`cd queryon-backend && mvn clean verify`。构建会运行护栏单测、24 条 golden set 回归、发布门禁与 REST 集成测试；发布时改用 `mvn -Prelease clean verify`（强制不跳过测试）。
-3. 启动：`java -jar bootstrap/target/queryon-bootstrap-0.1.0-SNAPSHOT.jar`，默认端口 `8080`。
+3. 启动：`java -jar bootstrap/target/queryon-bootstrap-0.1.0-SNAPSHOT.jar`，默认端口 `8080`。默认 `offline` profile 只用内存示例数据集，**不需要数据库、Redis 或任何密钥**。
 4. 前端骨架：`cd queryon-frontend && npm install && npm run dev`；首次安装生成的 lockfile 需入库。
-5. 数据库编排 `docker compose up -d postgres` 为后续持久化准备，当前闭环不依赖它；需要时通过环境变量提供 `POSTGRES_DB`、`POSTGRES_USER`、`POSTGRES_PASSWORD`，可选 `POSTGRES_PORT`。示例库表可按 `queryon-backend/bootstrap/src/main/resources/init/` 下 `01_create_database.sql` → `02_create_tables.sql` → `03_sample_data.sql` 顺序初始化（脚本不含凭据，连接参数由环境变量提供）。
-6. 容器化运行（可选）：`docker build -t queryon .`，再以 `docker run -p 8080:8080 -e DASHSCOPE_API_KEY queryon` 从宿主环境注入变量；镜像内不含任何凭据。
+5. 接本地 PostgreSQL／Redis（可选）：先 `docker compose up -d postgres redis`（通过环境变量提供 `POSTGRES_DB`、`POSTGRES_USER`、`POSTGRES_PASSWORD`、`REDIS_PASSWORD`，可选 `POSTGRES_PORT`、`REDIS_PORT`），再在本地创建 `application-dev.yml` 填写连接参数，并设置 `SPRING_PROFILES_ACTIVE=dev` 启动。示例库表可按 `queryon-backend/bootstrap/src/main/resources/init/` 下 `01_create_database.sql` → `02_create_tables.sql` → `03_sample_data.sql` 顺序初始化（脚本不含凭据，连接参数由环境变量提供）。
+6. 容器化运行（可选）：`docker compose up -d --build` 会同时起 PostgreSQL、Redis 与应用；镜像内不含任何凭据，`application-dev.yml` 由 `.dockerignore` 排除在构建上下文外，连接参数全部来自运行时环境变量。
 
 > **不要创建或提交 `.env`／`application-local.*`**，凭据不写入仓库。模型密钥只在需要接入真实模型端点时以环境变量 `DASHSCOPE_API_KEY` 提供；`application.yml` 只保留 `${...}` 占位符，没有任何字面量或默认值。
 
 ## 前端界面
 
-`cd queryon-frontend && npm install && npm run dev`，访问 `http://localhost:5173`（Vite 已将 `/api` 代理到 `8080`）。左侧导航分「分析工作台」与「治理与可信」两组、共十个页面：**智能问数、统一查询、报表、仪表板、多维分析、可视化分析**；**口径中心、评测与回归、反馈闭环、审计台账**。仪表板提供全局时间窗与同口径卡片；多维分析工作台独立提供切片／切块、行列维交换、逐层下钻与数据集复用；可视化分析工作台支持柱／线／饼图切换并一次取数按度量生成多图。统一查询页仍保留「标准视图／交叉表」切换与维度下钻；报表页支持中文列名、分列合计、CSV／Excel／PDF 导出、打印与订阅。顶部身份可在 `admin_bi`（全量）与 `analyst_east`（华东·敏感列屏蔽）之间切换，切换后同一问句的数据范围按行列级权限即时变化。
+`cd queryon-frontend && npm install && npm run dev`，访问 `http://localhost:5173`（Vite 已将 `/api` 代理到 `8080`）。左侧导航分「数据接入」「分析工作台」「治理与可信」三组、共十二个页面：**连接管理、逻辑数据集**；**智能问数、统一查询、报表、仪表板、多维分析、可视化分析**；**口径中心、评测与回归、反馈闭环、审计台账**。仪表板提供全局时间窗与同口径卡片；多维分析工作台独立提供切片／切块、行列维交换、逐层下钻与数据集复用；可视化分析工作台支持柱／线／饼图切换并一次取数按度量生成多图。统一查询页仍保留「标准视图／交叉表」切换与维度下钻；报表页支持中文列名、分列合计、CSV／Excel／PDF 导出、打印与订阅。顶部身份可在 `admin_bi`（全量）与 `analyst_east`（华东·敏感列屏蔽）之间切换，切换后同一问句的数据范围按行列级权限即时变化。
 
 ## 试一次问数
 
@@ -76,6 +80,10 @@ curl -X POST http://localhost:8080/api/ask \
 | 分享链接 | `GET`／`POST`／`DELETE` | `/api/shares` |
 | 缓存命中率 | `GET` | `/api/observability/cache` |
 | 内置数据源与元数据同步 | `GET`／`POST` | `/api/datasources`、`/api/datasources/sync` |
+| 数据源连接（凭据密文、连通性测试，仅全量基准身份） | `GET`／`POST`／`PUT`／`DELETE` | `/api/connections`、`/api/connections/{id}/test` |
+| 逻辑数据集（裁剪受管对象、按提问者身份取数） | `GET`／`POST`／`PUT`／`DELETE` | `/api/logical-datasets`、`/api/logical-datasets/{id}/query` |
+| 开放数据服务（服务密钥 + 显式 `subject`） | `GET`／`POST` | `/api/data-service/query`、`/api/data-service/metrics`、`/api/data-service/usage` |
+| MCP 适配层（SSE，复用受治理查询入口） | `GET` | `/sse` |
 | 审计台账 | `GET` | `/api/audit/events` |
 | 可观测统计与链路溯源 | `GET` | `/api/observability/metrics`、`/api/observability/traces/{traceId}` |
 | 一键回归 24 条样本 | `POST` | `/api/evaluations/run` |

@@ -1,0 +1,32 @@
+# 构建上下文排除项：镜像只接收源码与必要资源。
+# 凭据边界：本地 application-dev.yml／application-local.*／.env* 带真实连接值，
+# 绝不进入构建上下文与镜像；容器所需连接参数一律由运行时环境变量注入。
+
+# 构建产物与依赖
+**/target/
+**/node_modules/
+**/dist/
+**/.vite/
+.git/
+.idea/
+.codebuddy/
+Queryon.iml
+
+# 本地配置与凭据
+**/application-dev.yml
+**/application-local.*
+.env
+.env.*
+**/*.pem
+**/*.key
+
+# 本地规划与交付文档（不随开源仓库发布，也不进镜像）
+docs/
+AGENTS.md
+PRD.md
+ROADMAP.md
+TECH_DESIGN.md
+
+# 日志与临时文件
+**/*.log
+**/*.tmp

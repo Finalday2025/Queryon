@@ -1,7 +1,7 @@
 # 本地编排：PostgreSQL + pgvector、Redis、Queryon 后端（Q24、D8-07）。
 # 所有连接参数只以环境变量名引用，绝不写入仓库；不创建 .env 文件。
-# 应用 dev 配置里写的是本地连接值；这里用 Spring Boot 的标准环境变量
-# （优先级高于配置文件）覆盖为容器网络内的服务名，因此无需改动 application-dev.yml。
+# 应用默认 profile 为 offline（内存示例数据集），这里显式激活 dev 并指定 jdbc 数据源，
+# 连接参数全部由下面的环境变量提供；镜像内不含 application-dev.yml（见 .dockerignore）。
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -45,6 +45,9 @@ services:
       redis:
         condition: service_healthy
     environment:
+      # 显式激活 dev 并走 jdbc 取数，不依赖本地 application-dev.yml 是否存在于镜像内。
+      SPRING_PROFILES_ACTIVE: dev
+      QUERYON_DATA_SOURCE: jdbc
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:?required}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?required}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?required}

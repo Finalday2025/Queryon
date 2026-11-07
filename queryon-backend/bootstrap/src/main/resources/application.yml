@@ -2,7 +2,10 @@ spring:
   application:
     name: queryon
   profiles:
-    active: dev
+    # 默认 offline：只使用内置内存示例数据集，无需 PostgreSQL／Redis，新克隆可直接启动。
+    # 接本地 PostgreSQL／Redis 时用环境变量 SPRING_PROFILES_ACTIVE=dev 激活，
+    # 具体连接参数放在本地 application-dev.yml（已 gitignore，不入库、不进镜像）。
+    active: ${SPRING_PROFILES_ACTIVE:offline}
   ai:
     mcp:
       server:
@@ -24,7 +27,8 @@ spring:
 # 本文件只保留通用配置与 ${...} 占位符，不写任何真实地址、用户名、口令或密钥。
 # 占位符示例：jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}、${DB_USER}、
 # ${DB_PASSWORD}、${REDIS_HOST}、${REDIS_PORT}、${REDIS_PASSWORD}。
-# 默认 profile 不激活 DataSource/Redis，保证 mvn test 与发布门禁离线可重复运行。
+# offline 与 test 两个 profile 都不激活 DataSource/Redis，保证新克隆可直接启动、
+# mvn test 与发布门禁离线可重复运行；只有显式激活 dev 时才连接外部 PostgreSQL／Redis。
 
 queryon:
   data:
@@ -33,3 +37,16 @@ queryon:
     # 数据服务（D8-09）密钥：只从系统环境变量读取，未配置时 /api/data-service/* 整体关闭。
     # 不写任何字面量或默认值；调用方必须在请求头 X-Queryon-Service-Key 中提供。
     api-key: ${QUERYON_SERVICE_API_KEY:}
+
+---
+# offline profile：不加载 JDBC／Redis 自动配置，取数一律走内置内存示例数据集。
+# 显式激活 dev（SPRING_PROFILES_ACTIVE=dev）时本段不生效，连接参数由本地配置或环境变量提供。
+spring:
+  config:
+    activate:
+      on-profile: offline
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
