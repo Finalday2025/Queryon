@@ -24,5 +24,10 @@
       <groupId>com.queryon</groupId>
       <artifactId>queryon-semantic</artifactId>
     </dependency>
+    <!-- 解析门：解析成 AST 后按白名单校验，严禁用正则判断语句类型 -->
+    <dependency>
+      <groupId>com.github.jsqlparser</groupId>
+      <artifactId>jsqlparser</artifactId>
+    </dependency>
   </dependencies>
 </project>

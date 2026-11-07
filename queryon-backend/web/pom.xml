@@ -28,9 +28,38 @@
       <groupId>com.queryon</groupId>
       <artifactId>queryon-query</artifactId>
     </dependency>
+    <!-- 元数据画像 / 数据源摘要在 dev 模式下直查库；版本由 Boot BOM 锁定 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jdbc</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.queryon</groupId>
       <artifactId>queryon-evaluation</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <!-- MCP 适配层（M2 已决留在 M2）：Spring AI MCP server starter，与 Spring AI 1.1.0 配对。
+         spring-ai-starter-mcp-server 仅含 common 条件类与核心协议；WebMvc 版 SSE 端点实现在 webmvc 版 starter。 -->
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-mcp-server</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+    <!-- WebMvc SSE 端点实现：注册 /sse HTTP handler（项目用 spring-boot-starter-web） -->
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+    <!-- ToolCallback / MethodToolCallback / ToolDefinitions 所在模块；需 compile 范围显式声明，
+         否则仅以 optional 由上游传递，运行 classpath（IDEA run / bootRun / 打包）会缺类 -->
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-model</artifactId>
+      <version>1.1.0</version>
     </dependency>
   </dependencies>
 </project>

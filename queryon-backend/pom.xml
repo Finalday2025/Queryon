@@ -28,6 +28,8 @@
     <spring-boot.version>3.5.6</spring-boot.version>
     <spring-ai.version>1.1.0</spring-ai.version>
     <spring-ai-alibaba.version>1.1.0.0</spring-ai-alibaba.version>
+    <!-- 解析门 AST 白名单组件，坐标已按 Maven Central 核实，随 BOM 统一锁定 -->
+    <jsqlparser.version>5.3</jsqlparser.version>
   </properties>
 
   <dependencyManagement>
@@ -38,6 +40,12 @@
         <version>${spring-boot.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <!-- JSqlParser 采用 Apache-2.0 / LGPL 双许可，本项目按 Apache-2.0 口径使用 -->
+      <dependency>
+        <groupId>com.github.jsqlparser</groupId>
+        <artifactId>jsqlparser</artifactId>
+        <version>${jsqlparser.version}</version>
       </dependency>
       <dependency>
         <groupId>com.queryon</groupId>
@@ -78,12 +86,23 @@
   </dependencyManagement>
 
   <!--
-    M1a 待补坐标：Spring AI BOM、Spring AI Alibaba DashScope starter、JSqlParser、
-    PostgreSQL 驱动、Spring Security、Testcontainers、Micrometer/OpenTelemetry 等。
-    须在依赖可行性验证通过并按官方文档核实后引入；本次不预填未经核实的坐标。
+    M1a 已引入：Spring Boot starter-web / starter-test（由 Boot BOM 锁定）、JSqlParser。
+    仍未引入：Spring AI BOM 与 Alibaba DashScope starter、Spring Security、
+    PostgreSQL 驱动、Testcontainers、Micrometer/OpenTelemetry 等。
+    模型端点相关坐标须在「百炼具体模型名与额度／限流策略」未决项触发并完成
+    依赖可行性验证后成对引入；本次不预填未经核实的坐标，也不写入任何模型名。
     硬约束：Boot 3.5.x <-> Spring AI 1.1.x <-> Alibaba starter 必须成对调整；
     Spring AI 2.0 需 Boot 4.x，不属当前选型。
   -->
+
+  <!-- 评测即测试套件：JUnit 5 由 Spring Boot BOM 锁定版本，所有模块继承 test 作用域 -->
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <pluginManagement>
@@ -93,7 +112,56 @@
           <artifactId>spring-boot-maven-plugin</artifactId>
           <version>${spring-boot.version}</version>
         </plugin>
+        <!-- 评测即测试套件：显式锁定支持 JUnit 5 的 surefire 版本 -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.5.2</version>
+        </plugin>
+        <!-- 保留方法参数名：Spring AI 工具（MCP tools）需参数名以生成正确的输入 schema -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.13.0</version>
+          <configuration>
+            <parameters>true</parameters>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <!-- 发布门禁：显式绑定 surefire，任一评测／护栏回归失败即构建失败 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <testFailureIgnore>false</testFailureIgnore>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
+
+  <profiles>
+    <!-- 发布时用 -Prelease：强制不跳过测试、不允许指定空测试集绕过评测门禁 -->
+    <profile>
+      <id>release</id>
+      <properties>
+        <maven.test.skip>false</maven.test.skip>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skipTests>false</skipTests>
+              <testFailureIgnore>false</testFailureIgnore>
+              <failIfNoSpecifiedTests>true</failIfNoSpecifiedTests>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

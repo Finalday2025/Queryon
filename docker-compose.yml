@@ -1,5 +1,7 @@
-# 本地数据库编排：PostgreSQL + pgvector，端口映射宿主机（Q24）。
+# 本地编排：PostgreSQL + pgvector、Redis、Queryon 后端（Q24、D8-07）。
 # 所有连接参数只以环境变量名引用，绝不写入仓库；不创建 .env 文件。
+# 应用 dev 配置里写的是本地连接值；这里用 Spring Boot 的标准环境变量
+# （优先级高于配置文件）覆盖为容器网络内的服务名，因此无需改动 application-dev.yml。
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -18,5 +20,41 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: queryon-redis
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?required}"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - queryon-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?required}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: queryon-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:?required}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?required}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: "6379"
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:?required}
+      SPRING_AI_DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-dummy}
+    ports:
+      - "8080:8080"
+
 volumes:
   queryon-pgdata:
+  queryon-redisdata:

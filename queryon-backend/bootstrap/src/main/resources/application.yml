@@ -2,17 +2,34 @@ spring:
   application:
     name: queryon
   profiles:
-    active: ${QUERYON_PROFILE:default}
+    active: dev
   ai:
+    mcp:
+      server:
+        # M2 已决：MCP 适配层留在 M2（REST + MCP 同期）。SSE 传输复用受治理查询入口。
+        enabled: true
+        name: queryon
+        version: 0.1.0
+        type: SYNC
+        protocol: SSE
+        sse:
+          sse-endpoint: /sse
     dashscope:
       # 密钥只从系统环境变量 DASHSCOPE_API_KEY 读取，绝不写入仓库、代码或日志。
       # 不设置任何字面量与默认值；配置前缀在 M1a 引入 starter 时按官方文档复核。
       api-key: ${DASHSCOPE_API_KEY}
       # 具体模型名与额度／限流策略尚未确定，此处不填写。
 
-# 以下为配置模板，M1a 依赖可行性验证通过后再启用；当前不引入未核实的数据源配置。
-# spring:
-#   datasource:
-#     url: jdbc:postgresql://localhost:映射端口/占位数据库名
-#     username: ${DB_USER}
-#     password: ${DB_PASSWORD}
+# 环境相关配置（PostgreSQL／Redis）集中在 application-dev.yml（已 gitignore）。
+# 本文件只保留通用配置与 ${...} 占位符，不写任何真实地址、用户名、口令或密钥。
+# 占位符示例：jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}、${DB_USER}、
+# ${DB_PASSWORD}、${REDIS_HOST}、${REDIS_PORT}、${REDIS_PASSWORD}。
+# 默认 profile 不激活 DataSource/Redis，保证 mvn test 与发布门禁离线可重复运行。
+
+queryon:
+  data:
+    source: ${QUERYON_DATA_SOURCE:memory}
+  service:
+    # 数据服务（D8-09）密钥：只从系统环境变量读取，未配置时 /api/data-service/* 整体关闭。
+    # 不写任何字面量或默认值；调用方必须在请求头 X-Queryon-Service-Key 中提供。
+    api-key: ${QUERYON_SERVICE_API_KEY:}

@@ -24,6 +24,23 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
     </dependency>
+    <!-- PostgreSQL JDBC 驱动（05 第 7 节定稿组合）：仅运行时加载，版本由 Boot BOM 锁定。
+         数据源配置与持久化接入待 05 第 10 节未决项及依赖可行性验证触发。 -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- JDBC 数据源与事务：dev profile 下从 PostgreSQL 取数（version 由 Boot BOM 锁定） -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jdbc</artifactId>
+    </dependency>
+    <!-- 结果缓存：dev profile 下用 Redis 缓存受治理查询结果（version 由 Boot BOM 锁定） -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -31,6 +48,13 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

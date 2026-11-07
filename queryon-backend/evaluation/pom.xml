@@ -28,5 +28,10 @@
       <groupId>com.queryon</groupId>
       <artifactId>queryon-query</artifactId>
     </dependency>
+    <!-- 评测直接驱动问数主链路，保证 golden set 与线上入口共用同一套护栏 -->
+    <dependency>
+      <groupId>com.queryon</groupId>
+      <artifactId>queryon-ai</artifactId>
+    </dependency>
   </dependencies>
 </project>

@@ -1,0 +1,496 @@
+/* Queryon 前端设计系统：颜色、形状、排版、组件基线与动效的唯一来源 */
+
+:root {
+  /* 品牌色 */
+  --q-brand: #4f5ff5;
+  --q-brand-deep: #3b49d8;
+  --q-brand-soft: #eef0ff;
+  --q-accent: #12b8a6;
+  --q-amber: #e9992b;
+  --q-rose: #e05065;
+
+  /* 中性色 */
+  --q-ink: #17203a;
+  --q-ink-2: #42506e;
+  --q-muted: #8491ad;
+  --q-line: #e7ebf4;
+  --q-line-soft: #f0f3f9;
+  --q-surface: #ffffff;
+  --q-canvas: #f5f7fc;
+
+  /* 侧边栏 */
+  --q-nav-bg: #101a33;
+  --q-nav-bg-2: #0b1226;
+  --q-nav-text: #96a4c4;
+  --q-nav-text-active: #ffffff;
+
+  /* 形状与动效 */
+  --q-radius: 14px;
+  --q-radius-sm: 10px;
+  --q-shadow-sm: 0 1px 2px rgba(18, 32, 66, 0.04), 0 2px 8px -4px rgba(18, 32, 66, 0.12);
+  --q-shadow: 0 1px 2px rgba(18, 32, 66, 0.04), 0 12px 28px -16px rgba(18, 32, 66, 0.28);
+  --q-shadow-lg: 0 24px 60px -24px rgba(18, 32, 66, 0.35);
+  --q-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Element Plus 主题令牌对齐 */
+  --el-color-primary: #4f5ff5;
+  --el-color-primary-light-3: #7f8af8;
+  --el-color-primary-light-5: #a7affb;
+  --el-color-primary-light-7: #c9cffd;
+  --el-color-primary-light-8: #dcdefe;
+  --el-color-primary-light-9: #eef0ff;
+  --el-color-primary-dark-2: #3b49d8;
+  --el-color-success: #12a67f;
+  --el-color-warning: #e9992b;
+  --el-color-danger: #e05065;
+  --el-color-info: #7b89a8;
+  --el-color-success-light-9: #eaf8f3;
+  --el-color-warning-light-9: #fdf5e9;
+  --el-color-danger-light-9: #fdeef0;
+  --el-color-info-light-9: #f1f3f8;
+  --el-border-radius-base: 9px;
+  --el-border-radius-small: 7px;
+  --el-border-radius-round: 999px;
+  --el-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  --el-text-color-primary: #17203a;
+  --el-text-color-regular: #42506e;
+  --el-text-color-secondary: #8491ad;
+  --el-text-color-placeholder: #a9b3ca;
+  --el-border-color: #e3e8f2;
+  --el-border-color-light: #eaeef6;
+  --el-border-color-lighter: #f0f3f9;
+  --el-fill-color-light: #f4f6fb;
+  --el-fill-color-lighter: #f8fafd;
+  --el-bg-color-page: #f5f7fc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--q-canvas);
+  color: var(--q-ink);
+  font-family: var(--el-font-family);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+/* 数字统一等宽，避免表格/KPI 抖动 */
+.q-num,
+.el-table .cell,
+.q-metric-value,
+.q-kpi-value {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d8dfed;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b9c4dc;
+  background-clip: content-box;
+}
+
+/* ---------- 通用容器 ---------- */
+
+.q-card {
+  background: var(--q-surface);
+  border: 1px solid var(--q-line);
+  border-radius: var(--q-radius);
+  box-shadow: var(--q-shadow);
+  padding: 20px 22px;
+}
+
+.q-card--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.q-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--q-line-soft);
+}
+
+.q-card__title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--q-ink);
+}
+
+.q-card__title::before {
+  content: '';
+  width: 3px;
+  height: 15px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--q-brand), var(--q-accent));
+}
+
+.q-card__body {
+  padding: 20px 22px;
+}
+
+.q-section {
+  margin-bottom: 18px;
+}
+
+.q-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--q-muted);
+}
+
+.q-subtle {
+  color: var(--q-muted);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+.q-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.q-divider {
+  width: 1px;
+  height: 22px;
+  background: var(--q-line);
+  margin: 0 2px;
+}
+
+.q-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--q-brand-soft);
+  color: var(--q-brand-deep);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.q-chip--neutral {
+  background: #f1f4fa;
+  color: var(--q-ink-2);
+}
+
+.q-code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.q-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---------- Element Plus 组件基线 ---------- */
+
+.el-button {
+  font-weight: 600;
+  transition: transform 0.2s var(--q-ease), box-shadow 0.2s var(--q-ease),
+    background-color 0.2s ease, border-color 0.2s ease;
+}
+.el-button--primary:not(.is-text):not(.is-plain):not(.is-link) {
+  background: linear-gradient(135deg, #5a68f8 0%, #4553e6 100%);
+  border-color: transparent;
+  box-shadow: 0 4px 12px -4px rgba(79, 95, 245, 0.6);
+}
+.el-button--primary:not(.is-text):not(.is-plain):not(.is-link):not(.is-disabled):hover {
+  background: linear-gradient(135deg, #4a58ec 0%, #3b48d4 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px -6px rgba(79, 95, 245, 0.65);
+}
+.el-button:not(.is-text):not(.is-link):active {
+  transform: translateY(0);
+}
+.el-button.is-text {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.el-input__wrapper,
+.el-textarea__inner {
+  border-radius: var(--el-border-radius-base);
+  box-shadow: 0 0 0 1px var(--el-border-color) inset;
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.el-input__wrapper:hover,
+.el-textarea__inner:hover {
+  box-shadow: 0 0 0 1px #c3cce2 inset;
+}
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px var(--q-brand) inset, 0 0 0 3px rgba(79, 95, 245, 0.1);
+}
+.el-textarea__inner {
+  padding: 10px 12px;
+}
+
+.el-card {
+  border: 1px solid var(--q-line);
+  border-radius: var(--q-radius);
+  box-shadow: var(--q-shadow-sm);
+}
+
+.el-table {
+  --el-table-border-color: var(--q-line-soft);
+  --el-table-header-bg-color: #f8fafd;
+  --el-table-row-hover-bg-color: #f7f9ff;
+  border-radius: var(--q-radius-sm);
+  overflow: hidden;
+  font-size: 13px;
+}
+.el-table th.el-table__cell {
+  font-weight: 700;
+  color: var(--q-ink-2);
+  letter-spacing: 0.01em;
+}
+.el-table .el-table__cell {
+  padding: 9px 0;
+}
+.el-table--border::after,
+.el-table--border::before,
+.el-table__inner-wrapper::before {
+  background-color: var(--q-line-soft);
+}
+
+.el-tabs__item {
+  font-weight: 600;
+  color: var(--q-muted);
+  padding: 0 22px;
+  transition: color 0.2s ease;
+}
+.el-tabs__item.is-active {
+  color: var(--q-brand-deep);
+}
+.el-tabs__active-bar {
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(90deg, var(--q-brand), var(--q-accent));
+}
+.el-tabs__nav-wrap::after {
+  height: 1px;
+  background-color: var(--q-line-soft);
+}
+.el-tabs__content {
+  padding-top: 4px;
+}
+
+.el-alert {
+  border-radius: var(--q-radius-sm);
+  border: 1px solid transparent;
+  padding: 12px 16px;
+}
+.el-alert--info {
+  background: #f1f4ff;
+  border-color: #dfe5ff;
+  color: #3a4784;
+}
+.el-alert--success {
+  background: var(--el-color-success-light-9);
+  border-color: #cfeee1;
+}
+.el-alert--warning {
+  background: var(--el-color-warning-light-9);
+  border-color: #f7e3c2;
+}
+.el-alert--error {
+  background: var(--el-color-danger-light-9);
+  border-color: #f8d7dd;
+}
+.el-alert__title {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+.el-alert__description {
+  font-size: 12.5px;
+  line-height: 1.65;
+  margin-top: 3px;
+}
+
+.el-tag {
+  border-radius: 6px;
+  font-weight: 600;
+  border-color: transparent;
+}
+
+.el-dialog {
+  border-radius: var(--q-radius);
+  box-shadow: var(--q-shadow-lg);
+  padding: 22px 24px;
+}
+.el-dialog__title {
+  font-weight: 700;
+  color: var(--q-ink);
+}
+
+.el-collapse {
+  --el-collapse-border-color: var(--q-line-soft);
+  border: none;
+  border-radius: var(--q-radius-sm);
+  overflow: hidden;
+  background: #fbfcfe;
+}
+.el-collapse-item__header {
+  background: transparent;
+  padding-left: 14px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--q-ink-2);
+}
+.el-collapse-item__content {
+  padding: 4px 16px 16px;
+  background: transparent;
+}
+
+.el-radio-button__inner {
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+.el-radio-button__original-radio:checked + .el-radio-button__inner {
+  box-shadow: -1px 0 0 0 var(--q-brand);
+}
+
+.el-form-item__label {
+  font-weight: 600;
+  color: var(--q-ink-2);
+}
+
+.el-empty__description p {
+  color: var(--q-muted);
+}
+
+.el-step__title {
+  font-weight: 600;
+}
+.el-step__description {
+  color: var(--q-muted);
+}
+
+.el-select__popper.el-popper {
+  border: 1px solid var(--q-line);
+  border-radius: var(--q-radius-sm);
+  box-shadow: var(--q-shadow-lg);
+}
+.el-select-dropdown__item {
+  border-radius: 6px;
+}
+.el-select-dropdown__item.is-selected {
+  font-weight: 700;
+}
+
+/* ---------- 动效 ---------- */
+
+@keyframes q-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes q-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes q-dots {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.q-rise {
+  animation: q-rise 0.42s var(--q-ease) both;
+}
+
+.q-view-enter-active {
+  transition: opacity 0.28s ease, transform 0.28s var(--q-ease);
+}
+.q-view-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.q-view-leave-active {
+  transition: opacity 0.14s ease;
+}
+.q-view-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .q-card,
+  .q-card__body,
+  .q-card__head {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
