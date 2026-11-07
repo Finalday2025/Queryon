@@ -38,6 +38,21 @@ queryon:
     # 不写任何字面量或默认值；调用方必须在请求头 X-Queryon-Service-Key 中提供。
     api-key: ${QUERYON_SERVICE_API_KEY:}
 
+# 可观测导出（D8-06）：Prometheus 走拉取式，不需要任何外部服务；
+# OTLP 的 span 导出默认关闭，避免离线启动时反复外连采集端，需要时用环境变量开启。
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: never
+  otlp:
+    tracing:
+      export:
+        enabled: ${QUERYON_OTLP_ENABLED:false}
+
 ---
 # offline profile：不加载 JDBC／Redis 自动配置，取数一律走内置内存示例数据集。
 # 显式激活 dev（SPRING_PROFILES_ACTIVE=dev）时本段不生效，连接参数由本地配置或环境变量提供。

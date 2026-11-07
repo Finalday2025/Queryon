@@ -18,7 +18,7 @@
 - **统一 REST API**：问数、SQL 编辑器、仪表板与开放 API 共用同一语义层、同一查询接口与同一套治理横切。
 - **评测**：24 条 golden eval set 一键回归，输出可重复生成的版本报告；`mvn test` 即测试套件。发布用 `mvn -Prelease clean verify`：强制不跳过测试，评测不过即构建失败，并把确定性报告写入 `evaluation/target/evaluation-report.txt` 供归档；`POST /api/evaluations/run` 在存在失败样本时返回 409。
 - **反馈闭环**：人工纠正样本回流后可直接进入下一次 golden set 回归，既有 24 条样本的语义与断言不改。
-- **审计与可观测**：护栏拦截留记录，全入口可观测统计与按 `traceId` 溯源；不记录 prompt／completion 内容与任何凭据。
+- **审计与可观测**：护栏拦截留记录，全入口可观测统计与按 `traceId` 溯源；Micrometer 把调用次数（区分成功／拦截）、耗时、行数、慢查询与按错误码的拦截次数导出到 `/actuator/prometheus`，可直接被 Prometheus 拉取；OTLP span 导出默认关闭，需显式设置 `QUERYON_OTLP_ENABLED=true`。不记录 prompt／completion、SQL 文本、身份与任何凭据。
 - **简单报表与交叉表**：结果表／报表／交叉表／图表统一显示语义层中文业务名与单位；交叉表支持多度量并分别总计（不混算不同单位）；标准视图可点击维度单元格按语义层下钻路径逐层细化；一次取数可保存为数据集供报表复用，按提问者身份隔离且不重新查询。
 - **语义翻译、可观测与数据画像**：同一语义查询可按 PG／MYSQL 方言翻译并回归（PG 快照保持历史一致），所有取数入口共用可观测埋点，语义层受管字段支持数据预览与值画像。
 - **仪表板与审计台账**：仪表板在全局时间窗下展示受治理卡片，与问数、SQL 编辑器同口径（`02` 第 6.3 节判据 2 的第三条路径）；审计台账可检索成功、拦截、澄清与订阅执行事件。
@@ -29,7 +29,7 @@
 - **开放数据服务**（`D8-09`）：`/api/data-service/*` 以服务密钥（`X-Queryon-Service-Key`）鉴权并接收显式 `subject` 身份，按该身份注入行列级过滤，调用可计量、响应不回传密钥；未配置 `QUERYON_SERVICE_API_KEY` 时整组接口关闭。
 - **PostgreSQL 持久化回归**：`PostgresPersistenceIntegrationTest` 用 Testcontainers 拉起真实 PostgreSQL，执行 `init/` 下的建表与示例数据脚本后跑受治理问数全链路（SQL 渲染、维表 JOIN、明细分摊、权限注入、写操作拒绝）；宿主机没有容器运行时则整类跳过并在测试报告中标记为 skipped，不阻断离线构建。
 
-当前未启用：真实模型端点（具体模型名、额度与限流策略属未决项，触发前不拍板）、DashScope starter、Spring Security／OIDC、Micrometer／OpenTelemetry 导出器、**订阅的定时投递通道**（进程内周期调度已可用，外部推送与调度归属待 `05` 第 4 节再确认）、异步长查询任务化。模型路径默认走离线确定性实现，**不需要任何密钥即可跑通**。
+当前未启用：真实模型端点（具体模型名、额度与限流策略属未决项，触发前不拍板）、DashScope starter、Spring Security／OIDC、OTLP 采集端联通验证（默认关闭，开启后需自备 Collector）、**订阅的定时投递通道**（进程内周期调度已可用，外部推送与调度归属待 `05` 第 4 节再确认）、异步长查询任务化。模型路径默认走离线确定性实现，**不需要任何密钥即可跑通**。
 
 默认 profile 为 `offline`：只使用内置内存示例数据集，**不连接任何外部服务，新克隆即可启动**，`mvn test` 与发布门禁同样离线可重复。需要接本地 PostgreSQL／Redis 时用 `SPRING_PROFILES_ACTIVE=dev` 激活，连接参数放在本地 `application-dev.yml`（已 gitignore，不入库、不进镜像，见 `.dockerignore`）。企业版能力（多租户、AI 访问控制与用量配额、对象级权限、Calcite 翻译引擎、Redis／Quartz 调度等）按版本规划留在 `M3`／`M4`，社区版 `M2` 不引入。
 
@@ -80,6 +80,8 @@ curl -X POST http://localhost:8080/api/ask \
 | 异步长查询（提交／轮询／取消） | `POST`／`GET`／`DELETE` | `/api/queries/async` |
 | 分享链接 | `GET`／`POST`／`DELETE` | `/api/shares` |
 | 缓存命中率 | `GET` | `/api/observability/cache` |
+| 指标导出（Prometheus 拉取） | `GET` | `/actuator/prometheus` |
+| 健康检查 | `GET` | `/actuator/health` |
 | 内置数据源与元数据同步 | `GET`／`POST` | `/api/datasources`、`/api/datasources/sync` |
 | 数据源连接（凭据密文、连通性测试，仅全量基准身份） | `GET`／`POST`／`PUT`／`DELETE` | `/api/connections`、`/api/connections/{id}/test` |
 | 逻辑数据集（裁剪受管对象、按提问者身份取数） | `GET`／`POST`／`PUT`／`DELETE` | `/api/logical-datasets`、`/api/logical-datasets/{id}/query` |

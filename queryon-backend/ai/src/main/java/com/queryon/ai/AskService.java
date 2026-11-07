@@ -8,6 +8,7 @@ import com.queryon.common.audit.AuditEvent;
 import com.queryon.common.audit.AuditLog;
 import com.queryon.common.context.Actor;
 import com.queryon.common.context.AskTrace;
+import com.queryon.common.observability.QueryMetrics;
 import com.queryon.common.error.QueryonException;
 import com.queryon.query.QueryOutcome;
 import com.queryon.query.QueryService;
@@ -28,17 +29,25 @@ public final class AskService {
     private final QueryService queryService;
     private final ConversationMemory memory;
     private final AuditLog auditLog;
+    private final QueryMetrics metrics;
 
     public AskService(QueryService queryService, ChatModelPort modelPort,
                       ConversationMemory memory, AuditLog auditLog) {
+        this(queryService, modelPort, memory, auditLog, QueryMetrics.NOOP);
+    }
+
+    public AskService(QueryService queryService, ChatModelPort modelPort,
+                      ConversationMemory memory, AuditLog auditLog, QueryMetrics metrics) {
         this.queryService = queryService;
         this.memory = memory;
         this.auditLog = auditLog;
+        this.metrics = metrics == null ? QueryMetrics.NOOP : metrics;
         this.parser = new HybridQuestionParser(queryService.registry(), modelPort, memory);
     }
 
     public AskResponse ask(String question, Actor actor, String sessionId) {
         String sid = sessionId == null || sessionId.isBlank() ? "default" : sessionId;
+        long start = System.nanoTime();
         AskTrace trace = new AskTrace();
         trace.record("提问", "身份=" + actor.role());
         UnderstandingResult understanding = parser.parse(question, sid, actor, LocalDate.now());
@@ -49,6 +58,10 @@ public final class AskService {
 
         return switch (understanding.kind()) {
             case REJECTED -> {
+                // 解析门等前置拦截不经过 QueryService，这里单独计入同一份指标，
+                // 保证「护栏拦截统计」覆盖四道门的全部拦截点。
+                metrics.record((System.nanoTime() - start) / 1_000_000,
+                        false, understanding.error().code(), 0);
                 audit(trace.traceId(), actor, "问数", "拦截", understanding.error().code());
                 yield AskResponse.rejected(question, understanding.error(), trace.traceId(), trace.steps());
             }

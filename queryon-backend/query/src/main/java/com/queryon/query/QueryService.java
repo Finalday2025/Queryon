@@ -6,6 +6,7 @@ import com.queryon.common.context.Actor;
 import com.queryon.common.context.AskTrace;
 import com.queryon.common.error.QueryonException;
 import com.queryon.common.observability.ObservationStore;
+import com.queryon.common.observability.QueryMetrics;
 import com.queryon.common.result.ResultSet;
 import com.queryon.query.data.SampleDataset;
 import com.queryon.query.executor.InMemoryQueryExecutor;
@@ -42,6 +43,7 @@ public final class QueryService {
     private final SampleDataset dataset;
     private final AuditLog auditLog;
     private final ObservationStore observations;
+    private final QueryMetrics metrics;
 
     public QueryService(SemanticRegistry registry, SampleDataset dataset, AuditLog auditLog) {
         this(registry, dataset, auditLog, null, new InMemoryQueryExecutor(dataset));
@@ -52,13 +54,19 @@ public final class QueryService {
         this(registry, dataset, auditLog, observations, new InMemoryQueryExecutor(dataset));
     }
 
-    /** 注入可观测存储与执行器；执行器为空时回退内存实现，便于纯单元测试保持零依赖。 */
     public QueryService(SemanticRegistry registry, SampleDataset dataset, AuditLog auditLog,
                         ObservationStore observations, QueryExecutor executor) {
+        this(registry, dataset, auditLog, observations, executor, QueryMetrics.NOOP);
+    }
+
+    /** 注入可观测存储、执行器与指标出口；执行器为空时回退内存实现，便于纯单元测试保持零依赖。 */
+    public QueryService(SemanticRegistry registry, SampleDataset dataset, AuditLog auditLog,
+                        ObservationStore observations, QueryExecutor executor, QueryMetrics metrics) {
         this.registry = registry;
         this.dataset = dataset;
         this.auditLog = auditLog;
         this.observations = observations;
+        this.metrics = metrics == null ? QueryMetrics.NOOP : metrics;
         this.executor = executor == null ? new InMemoryQueryExecutor(dataset) : executor;
         this.translator = new SemanticTranslator(registry);
         this.guardChain = new GuardChain(registry);
@@ -112,12 +120,15 @@ public final class QueryService {
 
     private void observe(AskTrace trace, Actor actor, boolean success, String errorCode,
                          int rows, long start) {
+        long durationMs = (System.nanoTime() - start) / 1_000_000;
+        // 指标出口独立于内存台账：未装配监控组件时是 NOOP，不会影响治理链路。
+        metrics.record(durationMs, success, errorCode, rows);
         if (observations == null) {
             return;
         }
         observations.record(new ObservationStore.Event(
                 trace.traceId(), actor.userId(), actor.role(), "受治理查询",
-                (System.nanoTime() - start) / 1_000_000, success, errorCode, rows,
+                durationMs, success, errorCode, rows,
                 trace.steps().stream().map(step -> step.stage() + "：" + step.detail()).toList()));
     }
 

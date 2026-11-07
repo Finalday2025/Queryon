@@ -7,6 +7,7 @@ import com.queryon.ai.conversation.ConversationMemory;
 import com.queryon.common.audit.AuditLog;
 import com.queryon.common.audit.InMemoryAuditLog;
 import com.queryon.common.observability.ObservationStore;
+import com.queryon.common.observability.QueryMetrics;
 import com.queryon.evaluation.EvaluationRunner;
 import com.queryon.evaluation.FeedbackStore;
 import com.queryon.query.QueryService;
@@ -74,10 +75,12 @@ public class QueryonConfiguration {
     @Bean
     public QueryService queryService(SemanticRegistry registry, SampleDataset dataset,
                                      AuditLog auditLog, ObservationStore observationStore,
-                                     ObjectProvider<QueryExecutor> executorProvider) {
+                                     ObjectProvider<QueryExecutor> executorProvider,
+                                     ObjectProvider<QueryMetrics> metricsProvider) {
         QueryExecutor executor = executorProvider.getIfAvailable(
                 () -> new InMemoryQueryExecutor(dataset));
-        return new QueryService(registry, dataset, auditLog, observationStore, executor);
+        QueryMetrics metrics = metricsProvider.getIfAvailable(() -> QueryMetrics.NOOP);
+        return new QueryService(registry, dataset, auditLog, observationStore, executor, metrics);
     }
 
     @Bean
@@ -108,8 +111,10 @@ public class QueryonConfiguration {
 
     @Bean
     public AskService askService(QueryService queryService, ChatModelPort chatModelPort,
-                                 ConversationMemory memory, AuditLog auditLog) {
-        return new AskService(queryService, chatModelPort, memory, auditLog);
+                                 ConversationMemory memory, AuditLog auditLog,
+                                 ObjectProvider<QueryMetrics> metricsProvider) {
+        return new AskService(queryService, chatModelPort, memory, auditLog,
+                metricsProvider.getIfAvailable(() -> QueryMetrics.NOOP));
     }
 
     @Bean
